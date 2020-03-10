@@ -189,9 +189,8 @@ void encode_pw(int *p,int *n){
     add_idx(p,pw[id_s01],n[n_st] % 16);
 }
 
-//エントリポイント
-int main(int argc,char *argv[]){
-    int i,p[20],n[10];
+void get_param(int *n){
+    int i;
     char g[255];
     char msg[][255] = {"bp","bn","rs","rc","fm","ov","wt","sc","st"};
 
@@ -200,6 +199,13 @@ int main(int argc,char *argv[]){
         fgets(g,255,stdin);
         n[i] = atoi(g);
     }
+}
+
+//エントリポイント
+int main(int argc,char *argv[]){
+    int p[20],n[10];
+
+    get_param(n);
     encode_pw(p,n);
     print_pw(p);
     decode_pw(p);
