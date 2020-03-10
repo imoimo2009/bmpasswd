@@ -189,6 +189,7 @@ void encode_pw(int *p,int *n){
     add_idx(p,pw[id_s01],n[n_st] % 16);
 }
 
+//パラメータを入力
 void get_param(int *n){
     int i;
     char g[255];
