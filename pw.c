@@ -3,7 +3,10 @@
 
 #define PW_NUM          16
 #define PW_LENGTH       20
-#define SCSTR_LENGTH    8
+#define PARAM_NUM       9
+#define SCORE_LENGTH    7
+#define STAGE_LENGTH    2
+#define IDX_MAX         15
 
 // 加算パターン配列INDEX
 enum eId {
@@ -58,6 +61,29 @@ int pw[][20]  = {
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,-1, 1, 0}, //14 ドア・アイテム表示
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,-1, 2}, //15 ステージ16毎
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}  //16 壁すり抜け
+};
+
+//各項目の開始位置
+int pwx[] = { 0, 0, 1, 2, 3, 5, 6, 7, 8,10,11,12,13,15,16,17,18};
+
+//各項目の値1あたりの増分
+int pwd[] = { 0, 1, 8, 1, 1, 1, 1, 1, 8, 1, 1, 8, 1, 1, 1, 1, 1};
+
+int pwi[] = {id_bp,id_bn,id_rs,id_rc,id_fm,id_ov,id_wt};
+int sci[] = {id_1hm,id_10m,id_01m,id_1hk,id_10k,id_01k,id_01h};
+int sti[] = {id_s16,id_s01};
+
+//入出力メッセージ配列
+char msg[][255] = {
+    "爆風の強さ",
+    "爆弾の数",
+    "ローラースケート",
+    "リモコン",
+    "ファイアーマン",
+    "ドア・アイテム表示",
+    "壁すり抜け",
+    "スコア",
+    "ステージ"
 };
 
 //文字パターン
@@ -126,98 +152,94 @@ void print_pw(int *p){
 int mk_score(int *a){
     int i;
     char s[8];
-    int si[] = {id_1hm,id_10m,id_01m,id_1hk,id_10k,id_01k,id_01h};
 
     for(i = 0;i < 7;i++){
-        s[i] = '0' + (char)a[si[i]];
+        s[i] = '0' + (char)a[sci[i]];
     }
     s[7] = '\0';
     return atoi(s);
 }
 
-//パスワードをデコードし、パラメータを表示する
-int decode_pw(int *p){
-    int i,t;
-    int a[17];
-    char s[8];
-    int x[] = { 0, 0, 1, 2, 3, 5, 6, 7, 8,10,11,12,13,15,16,17,18};
-    int d[] = { 0, 1, 8, 1, 1, 1, 1, 1, 8, 1, 1, 8, 1, 1, 1, 1, 1};
+//パスワードをデコードする
+int decode_pw(int *p,int *a){
+    int i,t,c;
 
     for(i = 1;i <= PW_NUM;i++){
         a[i] = 0;
-        t = get_diff(p,x[i]);
+        t = get_diff(p,pwx[i]);
         if(t > 0){
-            add_idx(p,pw[i],-(t / d[i]));
+            add_idx(p,pw[i],-(t / pwd[i]));
             a[i] = t;
         }
     }
-    printf(" bp= %2d  ",a[id_bp]);
-    printf(" bn= %2d  ",a[id_bn]);
-    printf(" rs= %2d  ",a[id_rs]/8);
-    printf(" rc= %2d\n",a[id_rc]/8);
-    printf(" fm= %2d  ",a[id_fm]/8);
-    printf(" ov= %2d  ",a[id_ov]);
-    printf(" wt= %2d\n",a[id_wt]);
-    printf("score= %d\n",mk_score(a));
-    printf("stage= %d\n",a[id_s16]*16 + a[id_s01]);
+    c = 0;
+    for(i = 0;i < 20;i++){
+        if(p[i] == pw[id_bs][i]) c++;
+    }
+    if(c == 20) return 1;
     return 0;
 }
 
 //パラメータからパスワードのエンコードを行う
 void encode_pw(int *p,int *n){
-    int i;
-    char s[41];
-    char sc_str[8];
+    int i,j;
+    char sc_str[SCORE_LENGTH + 1];
 
     for(i = 0;i < 20;i++) p[i] = pw[id_bs][i];
-    add_idx(p,pw[id_bp],n[n_bp]);
-    add_idx(p,pw[id_bn],n[n_bn]);
-    add_idx(p,pw[id_rs],n[n_rs]);
-    add_idx(p,pw[id_rc],n[n_rc]);
-    add_idx(p,pw[id_fm],n[n_fm]);
-    add_idx(p,pw[id_ov],n[n_ov]);
-    add_idx(p,pw[id_wt],n[n_wt]);
-    sprintf(sc_str,"%07d",n[n_sc]);
-    add_idx(p,pw[id_01h],c2i(sc_str[6]));
-    add_idx(p,pw[id_01k],c2i(sc_str[5]));
-    add_idx(p,pw[id_10k],c2i(sc_str[4]));
-    add_idx(p,pw[id_1hk],c2i(sc_str[3]));
-    add_idx(p,pw[id_01m],c2i(sc_str[2]));
-    add_idx(p,pw[id_10m],c2i(sc_str[1]));
-    add_idx(p,pw[id_1hm],c2i(sc_str[0]));
-    add_idx(p,pw[id_s16],n[n_st] / 16);
-    add_idx(p,pw[id_s01],n[n_st] % 16);
+    for(i = 0;i < PARAM_NUM;i++){
+        if(i <= n_wt){
+            add_idx(p,pw[pwi[i]],n[i]);
+        }else if(i == n_sc){
+            sprintf(sc_str,"%07d",n[i]);
+            for(j = 0;j < SCORE_LENGTH;j++){
+                add_idx(p,pw[sci[j]],c2i(sc_str[j]));
+            }
+        }else{
+            add_idx(p,pw[id_s16],n[i] / 16);
+            add_idx(p,pw[id_s01],n[i] % 16);
+        }
+    }
 }
 
 //パラメータを入力
 void get_param(int *n){
     int i;
     char g[255];
-    char msg[][255] = {
-        "爆風の強さ",
-        "爆弾の数",
-        "ローラースケート",
-        "リモコン",
-        "ファイアーマン",
-        "ドア・アイテム表示",
-        "壁すり抜け",
-        "スコア",
-        "ステージ"
-    };
 
-    for(i = 0;i < 9;i++){
-        printf("? %s=",msg[i]);
+    for(i = 0;i < PARAM_NUM;i++){
+        printf("%s ?",msg[i]);
         fgets(g,255,stdin);
         n[i] = atoi(g);
     }
 }
 
+//パラメータを表示
+void print_param(int *a){
+    int i;
+
+    for(i = 0;i < PARAM_NUM;i++){
+        if(i <= n_wt){
+            printf("%s = %2d\n",msg[i],a[pwi[i]] / pwd[pwi[i]]);
+        }else if(i == n_sc){
+            printf("%s = %d\n",msg[i],mk_score(a));
+        }else{
+            printf("%s = %d\n",msg[i],a[id_s16]*16 + a[id_s01]);
+        }
+    }
+}
+
 //エントリポイント
 int main(int argc,char *argv[]){
-    int p[20],n[10];
+    int p[PW_LENGTH];
+    int n[PARAM_NUM];
+    int a[PW_NUM];
 
     get_param(n);
     encode_pw(p,n);
     print_pw(p);
-    decode_pw(p);
+    if(decode_pw(p,a)){
+        print_param(a);
+    }else{
+        print_pw(p);
+    }
 }
