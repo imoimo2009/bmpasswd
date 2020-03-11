@@ -5,7 +5,6 @@
 #define PW_LENGTH       20
 #define PARAM_NUM       9
 #define SCORE_LENGTH    7
-#define STAGE_LENGTH    2
 #define IDX_MAX         15
 
 // 加算パターン配列INDEX
@@ -69,9 +68,11 @@ int pwx[] = { 0, 0, 1, 2, 3, 5, 6, 7, 8,10,11,12,13,15,16,17,18};
 //各項目の値1あたりの増分
 int pwd[] = { 0, 1, 8, 1, 1, 1, 1, 1, 8, 1, 1, 8, 1, 1, 1, 1, 1};
 
+//ステータス増分INDEX並び替え
 int pwi[] = {id_bp,id_bn,id_rs,id_rc,id_fm,id_ov,id_wt};
+
+//スコア増分INDEX並び替え
 int sci[] = {id_1hm,id_10m,id_01m,id_1hk,id_10k,id_01k,id_01h};
-int sti[] = {id_s16,id_s01};
 
 //入出力メッセージ配列
 char msg[][255] = {
